@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Rita Deli — Koş!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --red:#D42B2B;
+  --red-dark:#A01F1F;
+  --red-light:#E84040;
+  --cream:#F5E6C8;
+  --yellow:#F9C060;
+  --brown:#8B4513;
+  --brown-light:#C8720A;
+  --white:#FFFFFF;
+  --bg:#1a0505;
+  --surface:#2a0808;
+  --muted:#b08080;
+  --green:#4CAF50;
+  --text:#fff;
+}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+.sc{display:none;min-height:100vh;padding:1.5rem 1rem;}
+.sc.active{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* LOGO */
+.logo-wrap{text-align:center;margin-bottom:1.5rem;}
+.logo-box{display:inline-block;background:var(--red);padding:.8rem 1.5rem;margin-bottom:.4rem;}
+.logo-text{font-family:'Press Start 2P',monospace;font-size:1.4rem;color:#fff;line-height:1.4;letter-spacing:.05em;}
+.logo-line{height:3px;background:#fff;margin:.2rem 0;}
+.logo-sub{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--muted);letter-spacing:.08em;margin-top:.5rem;}
+
+/* REGISTER */
+.reg-wrap{width:100%;max-width:370px;}
+.tier-row{display:flex;gap:8px;margin-bottom:1.2rem;}
+.tier{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(212,43,43,.25);border-radius:8px;padding:.65rem;text-align:center;}
+.tier.hi{border-color:var(--red);background:rgba(212,43,43,.1);}
+.tier-pct{font-family:'Press Start 2P',monospace;font-size:.85rem;color:var(--yellow);}
+.tier-lbl{font-size:.68rem;color:var(--muted);margin-top:4px;}
+.field{margin-bottom:.85rem;}
+.field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase;}
+.field input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(212,43,43,.3);border-radius:6px;padding:.75rem 1rem;color:#fff;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--red);}
+.field input::placeholder{color:rgba(255,255,255,.2);}
+.btn-start{width:100%;padding:1rem;background:var(--red);color:#fff;border:none;border-radius:6px;font-family:'Press Start 2P',monospace;font-size:.65rem;cursor:pointer;transition:transform .1s,background .2s;margin-top:.3rem;letter-spacing:.06em;}
+.btn-start:hover{background:var(--red-dark);}
+.btn-start:active{transform:scale(.97);}
+
+/* BLOCKED */
+.blk{text-align:center;max-width:340px;}
+.blk-ico{font-size:3rem;margin-bottom:1rem;}
+.blk-title{font-family:'Press Start 2P',monospace;font-size:.7rem;color:var(--red-light);margin-bottom:.8rem;line-height:1.6;}
+.blk-msg{color:var(--muted);font-size:.82rem;line-height:1.7;}
+.blk-msg strong{color:#fff;}
+.btn-back{padding:.75rem 1.5rem;background:transparent;border:2px solid var(--red);border-radius:6px;color:var(--red);font-family:'Press Start 2P',monospace;font-size:.5rem;cursor:pointer;margin-top:1.5rem;letter-spacing:.05em;}
+
+/* GAME */
+#sc-game{padding:0;justify-content:flex-start;background:var(--bg);}
+.game-ui{width:100%;max-width:480px;margin:0 auto;position:relative;}
+.hud{display:flex;justify-content:space-between;align-items:center;padding:.55rem 1rem;background:var(--red-dark);}
+.hud-score{font-family:'Press Start 2P',monospace;font-size:.62rem;color:var(--yellow);}
+.hud-hi{font-family:'Press Start 2P',monospace;font-size:.45rem;color:rgba(255,255,255,.5);margin-top:3px;}
+.hud-life{font-family:'Press Start 2P',monospace;font-size:.55rem;color:#fff;}
+canvas{display:block;width:100%;max-width:480px;touch-action:none;cursor:pointer;image-rendering:pixelated;}
+.tap-hint{font-family:'Press Start 2P',monospace;font-size:.42rem;color:rgba(255,255,255,.3);text-align:center;padding:.4rem;animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+
+/* OVERLAY */
+.g-overlay{position:absolute;inset:0;background:rgba(26,5,5,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;}
+.g-overlay-title{font-family:'Press Start 2P',monospace;font-size:.75rem;color:#fff;text-align:center;line-height:2;margin-bottom:1.2rem;}
+.g-overlay-hint{font-family:'Press Start 2P',monospace;font-size:.42rem;color:var(--muted);text-align:center;line-height:2.2;margin-bottom:1.2rem;}
+.btn-go{font-family:'Press Start 2P',monospace;font-size:.6rem;background:var(--red);color:#fff;border:none;padding:.85rem 1.8rem;border-radius:6px;cursor:pointer;animation:blink 1s infinite;letter-spacing:.05em;}
+
+/* TUTORIAL SCREEN */
+#sc-tutorial{background:var(--bg);}
+.tut-wrap{width:100%;max-width:400px;text-align:center;}
+.tut-title{font-family:'Press Start 2P',monospace;font-size:.75rem;color:var(--red-light);margin-bottom:1.4rem;line-height:1.8;}
+.tut-canvas-wrap{border:2px solid rgba(212,43,43,.3);border-radius:8px;overflow:hidden;margin-bottom:1.2rem;}
+.tut-steps{display:grid;gap:8px;margin-bottom:1.4rem;}
+.tut-step{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(212,43,43,.15);border-radius:8px;padding:.7rem .9rem;text-align:left;}
+.tut-step-icon{font-size:1.3rem;flex-shrink:0;}
+.tut-step-text{font-family:'Press Start 2P',monospace;font-size:.38rem;color:#ddd;line-height:2;}
+.tut-step-text span{color:var(--yellow);}
+.btn-tut-go{width:100%;padding:.9rem;background:var(--red);color:#fff;border:none;border-radius:6px;font-family:'Press Start 2P',monospace;font-size:.6rem;cursor:pointer;letter-spacing:.06em;transition:background .2s;}
+.btn-tut-go:hover{background:var(--red-dark);}
+
+/* COUNTDOWN OVERLAY */
+.cd-overlay{position:absolute;inset:0;background:rgba(26,5,5,.82);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20;}
+.cd-num{font-family:'Press Start 2P',monospace;font-size:5rem;color:#fff;text-shadow:0 0 30px var(--red);animation:cdpop .85s ease-out forwards;}
+.cd-go{font-family:'Press Start 2P',monospace;font-size:1.8rem;color:var(--yellow);text-shadow:0 0 30px var(--yellow);animation:cdpop .85s ease-out forwards;}
+@keyframes cdpop{0%{transform:scale(2);opacity:0;}25%{transform:scale(1);opacity:1;}75%{transform:scale(1);opacity:1;}100%{transform:scale(.5);opacity:0;}}
+
+/* RESULT */
+.result-wrap{width:100%;max-width:370px;text-align:center;}
+.result-stars{font-size:2.2rem;letter-spacing:.25em;color:var(--yellow);margin-bottom:.5rem;}
+.result-title{font-family:'Press Start 2P',monospace;font-size:.8rem;color:#fff;margin-bottom:.3rem;line-height:1.6;}
+.result-score{font-family:'Press Start 2P',monospace;font-size:1.7rem;color:var(--yellow);margin:.8rem 0;}
+.stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(212,43,43,.2);border-radius:10px;padding:.9rem;margin-bottom:.9rem;text-align:left;}
+.stat-row{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.8rem;}
+.stat-row:last-child{border-bottom:none;}
+.stat-row .lb{color:var(--muted);}
+.stat-row .vl{color:#fff;font-weight:500;}
+.coupon-box{border:2px dashed var(--red);border-radius:14px;padding:1.2rem;text-align:center;background:rgba(212,43,43,.05);margin-bottom:.9rem;}
+.cp-badge{display:inline-block;background:var(--red);color:#fff;font-family:'Press Start 2P',monospace;font-size:.42rem;padding:4px 10px;border-radius:20px;margin-bottom:.7rem;letter-spacing:.06em;}
+.cp-pct{font-family:'Press Start 2P',monospace;font-size:1.9rem;color:#fff;margin-bottom:.2rem;}
+.cp-label{color:var(--muted);font-size:.78rem;margin-bottom:.85rem;}
+.cp-code-row{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:.55rem;}
+.cp-code{font-family:'Press Start 2P',monospace;font-size:.7rem;color:#fff;letter-spacing:.1em;}
+.copy-btn{background:var(--red);border:none;border-radius:5px;color:#fff;font-size:.72rem;padding:5px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.cp-exp{font-size:.7rem;color:var(--muted);}
+.cp-exp strong{color:#ddd;}
+.no-coupon{background:rgba(249,192,96,.06);border:1px solid rgba(249,192,96,.2);border-radius:10px;padding:.85rem;color:var(--yellow);font-size:.8rem;margin-bottom:.9rem;line-height:1.7;}
+.lock-note{background:rgba(212,43,43,.08);border:1px solid rgba(212,43,43,.18);border-radius:7px;padding:.6rem;font-size:.73rem;color:#ff9999;line-height:1.5;margin-bottom:.5rem;}
+
+/* ADMIN */
+#sc-admin{justify-content:flex-start;padding:1rem;}
+.admin-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:620px;margin-bottom:1rem;}
+.admin-title{font-family:'Press Start 2P',monospace;font-size:.6rem;color:var(--red-light);}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:620px;margin-bottom:1rem;}
+.astat{background:var(--surface);border:1px solid rgba(212,43,43,.2);border-radius:8px;padding:.65rem;text-align:center;}
+.astat-val{font-family:'Press Start 2P',monospace;font-size:.85rem;color:var(--yellow);}
+.astat-lbl{font-size:.67rem;color:var(--muted);margin-top:4px;}
+.table-wrap{width:100%;max-width:620px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.76rem;}
+thead tr{background:rgba(212,43,43,.15);}
+th{padding:.55rem .5rem;text-align:left;color:var(--red-light);font-weight:500;white-space:nowrap;border-bottom:1px solid rgba(212,43,43,.2);}
+td{padding:.5rem .5rem;border-bottom:1px solid rgba(255,255,255,.05);color:#ddd;white-space:nowrap;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.badge-cp{background:rgba(76,175,80,.12);color:#81c784;border:1px solid rgba(76,175,80,.2);border-radius:4px;padding:2px 6px;font-size:.68rem;}
+.badge-none{color:var(--muted);font-size:.68rem;}
+.btn-exit{padding:.45rem .9rem;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:5px;color:var(--muted);font-size:.73rem;cursor:pointer;}
+.btn-csv{padding:.45rem .9rem;background:var(--red);border:none;border-radius:5px;color:#fff;font-size:.73rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ADMIN PASS */
+#sc-adminpass{justify-content:center;}
+.pass-wrap{text-align:center;max-width:280px;}
+.pass-wrap h2{font-family:'Press Start 2P',monospace;font-size:.65rem;color:var(--red-light);margin-bottom:1.2rem;line-height:1.6;}
+
+/* CONFETTI */
+.cfp{position:fixed;width:7px;height:7px;opacity:0;animation:cff 1.6s ease-in forwards;border-radius:1px;pointer-events:none;z-index:9999;}
+@keyframes cff{0%{transform:translateY(-10px) rotate(0);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<!-- KAYIT -->
+<div class="sc active" id="sc-reg">
+  <div class="logo-wrap">
+    <div class="logo-box">
+      <div class="logo-line"></div>
+      <div class="logo-text">RITA<br>DELI</div>
+      <div class="logo-line"></div>
+    </div>
+    <div class="logo-sub">★ PIXEL RUNNER ★</div>
+  </div>
+  <div class="reg-wrap">
+    <div class="tier-row">
+      <div class="tier"><div class="tier-pct">%5</div><div class="tier-lbl">500+ puan</div></div>
+      <div class="tier hi"><div class="tier-pct">%10</div><div class="tier-lbl">1500+ puan</div></div>
+    </div>
+    <div class="field"><label>Adınız *</label><input type="text" id="iName" placeholder="Adınızı girin"/></div>
+    <div class="field"><label>E-posta *</label><input type="email" id="iEmail" placeholder="email@ornek.com"/></div>
+    <div class="field"><label>Telefon (opsiyonel)</label><input type="tel" id="iPhone" placeholder="+90 5xx xxx xx xx"/></div>
+    <button class="btn-start" id="btnStart">► OYUNU BAŞLAT</button>
+  </div>
+  <div style="margin-top:1.8rem;font-size:.65rem;color:rgba(255,255,255,.1);cursor:pointer;" onclick="showAdmin()">▪ admin</div>
+</div>
+
+<!-- BLOCKED -->
+<div class="sc" id="sc-blk">
+  <div class="blk">
+    <div class="blk-ico">🔒</div>
+    <div class="blk-title">OYUN ZATEN<br>OYNANDI!</div>
+    <div class="blk-msg" id="blkMsg"></div>
+    <button class="btn-back" onclick="showSc('sc-reg')">← GERİ DÖN</button>
+  </div>
+</div>
+
+<!-- TUTORIAL -->
+<div class="sc" id="sc-tutorial">
+  <div class="tut-wrap">
+    <div class="tut-title">NASIL OYNANIR?</div>
+    <canvas id="tutCanvas" width="400" height="140" style="width:100%;display:block;image-rendering:pixelated;border:2px solid rgba(212,43,43,.3);border-radius:8px;margin-bottom:1.2rem;"></canvas>
+    <div class="tut-steps">
+      <div class="tut-step">
+        <div class="tut-step-icon">👆</div>
+        <div class="tut-step-text">EKRANA DOKUN veya <span>BOŞLUK</span> = ZIPLA</div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-icon">🍔</div>
+        <div class="tut-step-text">YİYECEKLERDEN KAÇIN — GİTGİDE <span>HIZLANIYORLAR!</span></div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-icon">❤️</div>
+        <div class="tut-step-text"><span>TEK CAN HAKKIN VAR</span> — ÇARPIRSAN GAME OVER!</div>
+      </div>
+      <div class="tut-step">
+        <div class="tut-step-icon">🎟️</div>
+        <div class="tut-step-text">500 PTS → <span>%5</span> &nbsp;|&nbsp; 1500 PTS → <span>%10 İNDİRİM</span></div>
+      </div>
+    </div>
+    <button class="btn-tut-go" id="btnTutGo">► HAZIR! BAŞLAT</button>
+  </div>
+</div>
+
+<!-- OYUN -->
+<div class="sc" id="sc-game">
+  <div class="game-ui" id="gameUI">
+    <div class="hud">
+      <div>
+        <div class="hud-score" id="hudScore">SKOR: 0</div>
+        <div class="hud-hi" id="hudHi">EN İYİ: 0</div>
+      </div>
+      <div class="hud-life" id="hudLife">❤️ x1</div>
+    </div>
+    <div style="position:relative;">
+      <canvas id="gc" width="480" height="240"></canvas>
+      <div class="g-overlay" id="gOverlay" style="display:none;">
+        <div class="g-overlay-title">GAME OVER!</div>
+        <div class="g-overlay-hint" id="gOverHint"></div>
+        <button class="btn-go" id="btnGo">► SONUÇLARA GİT</button>
+      </div>
+      <div class="cd-overlay" id="cdOverlay">
+        <div id="cdNum" class="cd-num">3</div>
+      </div>
+    </div>
+    <div class="tap-hint">DOKUN veya BOŞLUK TUŞU = ZIPLA</div>
+  </div>
+</div>
+
+<!-- SONUÇ -->
+<div class="sc" id="sc-res">
+  <div class="result-wrap" id="resContent"></div>
+</div>
+
+<!-- ADMIN ŞİFRE -->
+<div class="sc" id="sc-adminpass">
+  <div class="pass-wrap">
+    <h2>ADMİN<br>GİRİŞİ</h2>
+    <div class="field"><label>Şifre</label><input type="password" id="adminPwd" placeholder="••••••" onkeydown="if(event.key==='Enter')checkAdmin()"/></div>
+    <button class="btn-start" onclick="checkAdmin()">GİRİŞ →</button>
+    <div id="adminErr" style="color:#ff6666;font-size:.73rem;margin-top:.5rem;text-align:center;min-height:1rem;"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="sc" id="sc-admin">
+  <div class="admin-bar">
+    <div class="admin-title">👾 ADMİN PANELİ</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-csv" onclick="exportCSV()">CSV İndir</button>
+      <button class="btn-exit" onclick="showSc('sc-reg')">Çıkış</button>
+    </div>
+  </div>
+  <div class="admin-stats" id="adminStats"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Ad</th><th>E-posta</th><th>Tel</th><th>Puan</th><th>Kupon</th><th>Tarih</th></tr></thead>
+      <tbody id="adminBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════
+   UTILS
+══════════════════════ */
+const ADMIN_PASS='rita2024';
+const DB_KEY='rita_deli_v2';
+
+function showSc(id){document.querySelectorAll('.sc').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function getPlayers(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[];}catch(e){return[];}}
+function savePlayers(p){try{localStorage.setItem(DB_KEY,JSON.stringify(p));}catch(e){}}
+function normalizePhone(t){return t.replace(/[\s\-\(\)]/g,'');}
+function hasPlayedEmail(email){return getPlayers().find(p=>p.email.toLowerCase()===email.toLowerCase())||null;}
+function hasPlayedPhone(phone){if(!phone||phone.length<7)return null;const n=normalizePhone(phone);return getPlayers().find(p=>p.phone&&normalizePhone(p.phone)===n)||null;}
+function hasPlayed(email,phone){return hasPlayedEmail(email)||hasPlayedPhone(phone);}
+function addPlayer(d){const p=getPlayers();p.push(d);savePlayers(p);}
+function getBest(){return parseInt(localStorage.getItem('rita_best_v2')||'0');}
+function setBest(s){if(s>getBest())localStorage.setItem('rita_best_v2',String(s));}
+function genCode(pct){return`RITA${pct}${Math.random().toString(36).slice(2,6).toUpperCase()}`;}
+function getCoupon(s){if(s>=1500)return{pct:10,code:genCode(10),tier:'SÜPER'};if(s>=500)return{pct:5,code:genCode(5),tier:'İYİ'};return null;}
+function todayEnd(){const d=new Date();return`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()} 23:59`;}
+function fmtDate(ts){const d=new Date(ts);return`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+
+/* ══════════════════════
+   KAYIT
+══════════════════════ */
+document.getElementById('btnStart').onclick=function(){
+  const name=document.getElementById('iName').value.trim();
+  const email=document.getElementById('iEmail').value.trim();
+  const phone=document.getElementById('iPhone').value.trim();
+  if(!name){document.getElementById('iName').style.borderColor='#D42B2B';return;}
+  if(!email||!/^[^@]+@[^@]+\.[^@]+$/.test(email)){document.getElementById('iEmail').style.borderColor='#D42B2B';return;}
+  document.getElementById('iName').style.borderColor='';document.getElementById('iEmail').style.borderColor='';
+  const dupEmail=hasPlayedEmail(email);
+  const dupPhone=phone.length>=7?hasPlayedPhone(phone):null;
+  const dup=dupEmail||dupPhone;
+  if(dup){
+    const reason=dupEmail&&dupPhone?'E-posta ve telefon numarası':(dupEmail?'Bu e-posta adresi':'Bu telefon numarası');
+    let cl=dup.coupon?`<br>Kupon: <strong>${dup.coupon.code}</strong> (%${dup.coupon.pct})`:'';
+    document.getElementById('blkMsg').innerHTML=
+      `<span style="color:var(--red-light);font-family:'Press Start 2P',monospace;font-size:.6rem">${reason} zaten kayıtlı.</span><br><br>`+
+      `Oyuncu: <strong>${dup.name}</strong><br>`+
+      `Tarih: <strong>${fmtDate(dup.ts)}</strong><br>`+
+      `Puan: <strong>${dup.score}</strong>${cl}<br><br>`+
+      `Her e-posta ve telefon numarası ile yalnızca bir kez oynanabilir.`;
+    showSc('sc-blk');return;
+  }
+  window._player={name,email,phone};
+  showSc('sc-tutorial');
+  startTutorial();
+};
+
+/* ══════════════════════
+   PİKSEL SPRITE SİSTEMİ
+══════════════════════ */
+// Her hücre bir renk indeksi, 0 = şeffaf
+// Rita Deli renk paleti: kırmızı, krem, sarı, kahverengi
+
+function px(ctx,grid,x,y,sz,pal){
+  grid.forEach((row,ry)=>row.forEach((c,rx)=>{
+    if(!c)return;
+    ctx.fillStyle=pal[c-1];
+    ctx.fillRect(Math.round(x+rx*sz),Math.round(y+ry*sz),sz,sz);
+  }));
+}
+
+// ── KARAKTER: Rita kız (8×10 grid, 4px/cell) ──
+const RITA_COLORS=['#F5E6C8','#D42B2B','#8B4513','#F9C060','#FFFFFF','#2a0808'];
+const RITA_RUN1=[
+  [0,0,2,2,2,2,0,0],
+  [0,2,5,5,5,5,2,0],
+  [0,2,1,1,1,1,2,0],
+  [0,2,1,1,1,1,2,0],
+  [0,0,1,3,3,1,0,0],
+  [0,1,3,3,3,3,1,0],
+  [1,1,4,4,4,4,1,1],
+  [0,0,4,0,0,4,0,0],
+  [0,0,3,0,3,0,0,0],
+  [0,0,3,0,0,0,0,0],
+];
+const RITA_RUN2=[
+  [0,0,2,2,2,2,0,0],
+  [0,2,5,5,5,5,2,0],
+  [0,2,1,1,1,1,2,0],
+  [0,2,1,1,1,1,2,0],
+  [0,0,1,3,3,1,0,0],
+  [0,1,3,3,3,3,1,0],
+  [1,1,4,4,4,4,1,1],
+  [0,0,4,0,0,4,0,0],
+  [0,0,0,4,0,4,0,0],
+  [0,0,0,3,0,3,0,0],
+];
+const RITA_JUMP=[
+  [0,0,2,2,2,2,0,0],
+  [0,2,5,5,5,5,2,0],
+  [0,2,1,1,1,1,2,0],
+  [0,2,1,1,1,1,2,0],
+  [0,0,1,3,3,1,0,0],
+  [0,1,3,3,3,3,1,0],
+  [1,1,4,4,4,4,1,1],
+  [0,1,4,0,0,4,1,0],
+  [1,0,3,0,0,3,0,1],
+  [0,0,0,0,0,0,0,0],
+];
+
+// ── BURGER (8×9) — krem ekmek, kırmızı et, sarı peynir ──
+const BURGER_C=['#C8720A','#F5E6C8','#D42B2B','#F9C060','#4CAF50'];
+const BURGER=[
+  [0,2,2,2,2,2,2,0],
+  [2,2,2,2,2,2,2,2],
+  [0,2,2,2,2,2,2,0],
+  [0,5,5,5,5,5,5,0],
+  [3,3,3,3,3,3,3,3],
+  [4,4,4,4,4,4,4,4],
+  [3,3,3,3,3,3,3,3],
+  [0,1,1,1,1,1,1,0],
+  [1,1,1,1,1,1,1,1],
+];
+
+// ── SANDVİÇ/TOST (8×8) — beyaz ekmek, kırmızı dolgulu ──
+const SANDVIC_C=['#F5E6C8','#D42B2B','#F9C060','#8B4513','#FFFFFF'];
+const SANDVIC=[
+  [1,1,1,1,1,1,1,1],
+  [1,5,5,5,5,5,5,1],
+  [0,2,2,2,2,2,2,0],
+  [0,2,3,2,2,3,2,0],
+  [0,2,2,2,2,2,2,0],
+  [1,1,1,1,1,1,1,1],
+  [1,5,5,5,5,5,5,1],
+  [1,1,1,1,1,1,1,1],
+];
+
+// ── PİZZA DİLİMİ (8×9) ──
+const PIZZA_C=['#F9C060','#D42B2B','#F5E6C8','#C8720A','#8B4513'];
+const PIZZA=[
+  [0,0,0,1,1,0,0,0],
+  [0,0,1,2,2,1,0,0],
+  [0,1,2,1,1,2,1,0],
+  [1,2,2,2,2,2,2,1],
+  [1,2,1,2,2,1,2,1],
+  [1,1,2,2,2,2,1,1],
+  [0,1,1,1,1,1,1,0],
+  [0,0,4,4,4,4,0,0],
+  [0,0,0,5,5,0,0,0],
+];
+
+// ── PATATES KUTUSU (8×10) ──
+const FRIES_C=['#D42B2B','#FFFFFF','#F9C060','#C8720A'];
+const FRIES=[
+  [0,3,0,3,3,0,3,0],
+  [3,3,3,3,3,3,3,3],
+  [3,3,3,3,3,3,3,3],
+  [0,3,3,3,3,3,3,0],
+  [1,1,1,1,1,1,1,1],
+  [1,2,2,1,1,2,2,1],
+  [1,2,2,1,1,2,2,1],
+  [1,2,2,1,1,2,2,1],
+  [1,1,1,1,1,1,1,1],
+  [0,1,1,1,1,1,1,0],
+];
+
+// ── WRAP (8×8) ──
+const WRAP_C=['#F5E6C8','#D42B2B','#F9C060','#4CAF50'];
+const WRAP=[
+  [0,1,1,1,1,1,1,0],
+  [1,1,3,2,2,3,1,1],
+  [1,3,2,4,4,2,3,1],
+  [1,3,4,4,4,4,3,1],
+  [1,3,2,4,4,2,3,1],
+  [1,1,3,2,2,3,1,1],
+  [0,1,1,1,1,1,0,0],
+  [0,0,0,1,1,0,0,0],
+];
+
+const OBS_LIST=[
+  {grid:BURGER,  pal:BURGER_C,  w:8,h:9},
+  {grid:SANDVIC, pal:SANDVIC_C, w:8,h:8},
+  {grid:PIZZA,   pal:PIZZA_C,   w:8,h:9},
+  {grid:FRIES,   pal:FRIES_C,   w:8,h:10},
+  {grid:WRAP,    pal:WRAP_C,    w:8,h:8},
+];
+
+/* ══════════════════════
+   OYUN MOTORU
+══════════════════════ */
+let RAF=null;
+let INPUT_BOUND=false;
+
+/* ══════════════════════
+   TUTORIAL
+══════════════════════ */
+function startTutorial(){
+  const canvas = document.getElementById('tutCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const W=400, H=140, SZ=3;
+  const GROUND = H - 22;
+  let frame = 0;
+  let tutRAF = null;
+  // Simple demo: character running, obstacles approaching slowly
+  let demoPlayer = {x:55, y:GROUND-10*SZ, vy:0, onGround:true, animFrame:0, animTimer:0};
+  let demoObs = [{x:W+20, type:0},{x:W+140, type:2}];
+  let demoSpeed = 1.5;
+  let autoJumpTimer = 0;
+
+  function tutLoop(){
+    ctx.clearRect(0,0,W,H);
+    // BG
+    ctx.fillStyle='#1a0505'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#2a0808'; ctx.fillRect(0,GROUND,W,H-GROUND);
+    ctx.fillStyle='#D42B2B'; ctx.fillRect(0,GROUND,W,2);
+    for(let i=0;i<W;i+=16) {ctx.fillStyle='rgba(212,43,43,.15)'; ctx.fillRect(i,GROUND+2,8,H-GROUND-2);}
+    // Stars
+    ctx.fillStyle='rgba(245,230,200,.3)';
+    [[30,12],[90,8],[160,15],[240,6],[320,11],[370,16]].forEach(([sx,sy])=>ctx.fillRect(sx,sy,1,1));
+
+    frame++;
+    // Auto jump when obstacle near
+    autoJumpTimer--;
+    const nearest = demoObs.reduce((a,b)=>b.x<a.x&&b.x>demoPlayer.x?b:a, {x:9999});
+    if(nearest.x - demoPlayer.x < 80 && nearest.x - demoPlayer.x > 0 && autoJumpTimer<=0 && demoPlayer.onGround){
+      demoPlayer.vy=-13; demoPlayer.onGround=false; autoJumpTimer=60;
+    }
+    // Physics
+    demoPlayer.vy+=0.65;
+    demoPlayer.y+=demoPlayer.vy;
+    if(demoPlayer.y>=GROUND-10*SZ){demoPlayer.y=GROUND-10*SZ;demoPlayer.vy=0;demoPlayer.onGround=true;}
+    demoPlayer.animTimer++;
+    if(demoPlayer.animTimer>7){demoPlayer.animFrame=(demoPlayer.animFrame+1)%4;demoPlayer.animTimer=0;}
+    // Obstacles
+    demoObs.forEach(o=>o.x-=demoSpeed);
+    demoObs=demoObs.filter(o=>o.x>-50);
+    if(demoObs.length<2) demoObs.push({x:W+30+Math.random()*80,type:Math.floor(Math.random()*5)});
+    // Draw obstacles
+    demoObs.forEach(o=>{
+      const def=OBS_LIST[o.type%OBS_LIST.length];
+      px(ctx,def.grid,o.x,GROUND-def.h*3,3,def.pal);
+    });
+    // Draw player
+    const spr=!demoPlayer.onGround?RITA_JUMP:(demoPlayer.animFrame<2?RITA_RUN1:RITA_RUN2);
+    px(ctx,spr,demoPlayer.x,demoPlayer.y,SZ,RITA_COLORS);
+    // "ZIPLA!" hint arrow
+    if(!demoPlayer.onGround){
+      ctx.fillStyle='rgba(249,192,96,.7)';
+      ctx.font='bold 9px monospace';
+      ctx.fillText('↑ ZIPLA!',demoPlayer.x-5,demoPlayer.y-6);
+    }
+    tutRAF = requestAnimationFrame(tutLoop);
+  }
+  tutRAF = requestAnimationFrame(tutLoop);
+
+  document.getElementById('btnTutGo').onclick = function(){
+    if(tutRAF) cancelAnimationFrame(tutRAF);
+    showSc('sc-game');
+    startGame();
+  };
+}
+
+/* ══════════════════════
+   COUNTDOWN
+══════════════════════ */
+function runCountdown(cb){
+  const ov = document.getElementById('cdOverlay');
+  const num = document.getElementById('cdNum');
+  ov.style.display='flex';
+  let count = 3;
+  num.className='cd-num';
+  num.textContent=count;
+  // force reflow to restart animation
+  void num.offsetWidth;
+  num.className='cd-num';
+
+  const tick = setInterval(()=>{
+    count--;
+    if(count > 0){
+      num.style.animation='none';
+      void num.offsetWidth;
+      num.className='cd-num';
+      num.textContent=count;
+    } else if(count === 0){
+      num.style.animation='none';
+      void num.offsetWidth;
+      num.className='cd-go';
+      num.textContent='GİT!';
+    } else {
+      clearInterval(tick);
+      ov.style.display='none';
+      cb();
+    }
+  }, 900);
+}
+
+function startGame(){
+  if(RAF){cancelAnimationFrame(RAF);}
+
+  const canvas=document.getElementById('gc');
+  const ctx=canvas.getContext('2d');
+  ctx.imageSmoothingEnabled=false;
+
+  document.getElementById('hudScore').textContent='SKOR: 0';
+  document.getElementById('hudHi').textContent='EN İYİ: '+getBest();
+  document.getElementById('hudLife').textContent='❤️ x1';
+  document.getElementById('gOverlay').style.display='none';
+  document.getElementById('cdOverlay').style.display='none';
+
+  const W=480,H=240;
+  const SZ=4;       // sprite piksel boyutu
+  const GH=10;      // karakter grid yüksekliği
+  const GROUND=H-28;
+  const PLAYER_W=8*SZ, PLAYER_H=GH*SZ;
+
+  let running=false, over=false;
+  let score=0, speed=2.8, frame=0;
+  let obstacles=[], nextObs=90;
+  let bgStars=[];
+  let bgTiles=[];
+  let flashTimer=0;
+
+  // Arkaplan elementleri
+  for(let i=0;i<12;i++) bgStars.push({x:Math.random()*W,y:10+Math.random()*60,s:Math.random()>.6?2:1});
+  for(let i=0;i<25;i++) bgTiles.push({x:i*20,w:10});
+
+  const player={
+    x:55, y:GROUND-PLAYER_H,
+    vy:0, onGround:true,
+    animFrame:0, animTimer:0,
+  };
+
+  function jump(){
+    if(player.onGround){
+      player.vy=-15;
+      player.onGround=false;
+    }
+  }
+
+  // Input — sadece bir kez bağla
+  if(!INPUT_BOUND){
+    INPUT_BOUND=true;
+    canvas.addEventListener('touchstart',e=>{e.preventDefault();jump();},{passive:false});
+    canvas.addEventListener('mousedown',jump);
+    document.addEventListener('keydown',e=>{
+      if((e.code==='Space'||e.code==='ArrowUp')&&document.getElementById('sc-game').classList.contains('active')){
+        e.preventDefault();jump();
+      }
+    });
+  }
+
+
+  function spawnObs(){
+    const def=OBS_LIST[Math.floor(Math.random()*OBS_LIST.length)];
+    const sz=score<600?4:(score<1400?5:6);
+    const ow=def.w*sz, oh=def.h*sz;
+    // Uçan engel (yüksek skorda)
+    const fly=score>1000&&Math.random()<0.22;
+    const oy=fly? GROUND-oh-PLAYER_H*0.8 : GROUND-oh;
+    obstacles.push({x:W+10,y:oy,def,sz,ow,oh});
+    // Çift engel
+    if(score>700&&Math.random()<0.28){
+      const def2=OBS_LIST[Math.floor(Math.random()*OBS_LIST.length)];
+      obstacles.push({x:W+10+ow+10,y:GROUND-def2.h*sz,def:def2,sz,ow:def2.w*sz,oh:def2.h*sz});
+    }
+  }
+
+  function checkHit(ob){
+    const pad=5;
+    return(
+      player.x+pad < ob.x+ob.ow-pad &&
+      player.x+PLAYER_W-pad > ob.x+pad &&
+      player.y+pad < ob.y+ob.oh-pad &&
+      player.y+PLAYER_H-pad > ob.y+pad
+    );
+  }
+
+  function endGame(){
+    over=true;
+    cancelAnimationFrame(RAF);
+    setBest(score);
+    document.getElementById('hudHi').textContent='EN İYİ: '+getBest();
+    const ov=document.getElementById('gOverlay');
+    const hint=document.getElementById('gOverHint');
+    hint.textContent='SKORUN: '+score;
+    ov.style.display='flex';
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+
+    // ── ARKAPLAN ──
+    ctx.fillStyle='#1a0505';ctx.fillRect(0,0,W,H);
+
+    // Yıldızlar
+    ctx.fillStyle='rgba(245,230,200,.35)';
+    bgStars.forEach(s=>ctx.fillRect(s.x,s.y,s.s,s.s));
+
+    // Rita Deli arka yazısı
+    ctx.globalAlpha=.06;
+    ctx.fillStyle='#D42B2B';
+    ctx.font='bold 60px sans-serif';
+    ctx.fillText('RITA DELI',20,120);
+    ctx.globalAlpha=1;
+
+    // Zemin
+    ctx.fillStyle='#2a0808';ctx.fillRect(0,GROUND,W,H-GROUND);
+    ctx.fillStyle='#D42B2B';ctx.fillRect(0,GROUND,W,3);
+    // Zemin deseni
+    ctx.fillStyle='rgba(212,43,43,.18)';
+    for(let i=0;i<W;i+=20)ctx.fillRect(i,GROUND+3,10,H-GROUND-3);
+
+    if(running && !over){
+      frame++;
+      score++;
+      speed=2.8+Math.floor(score/400)*0.55;
+      document.getElementById('hudScore').textContent='SKOR: '+score;
+
+      // Player physics
+      player.vy+=0.72;
+      player.y+=player.vy;
+      if(player.y>=GROUND-PLAYER_H){player.y=GROUND-PLAYER_H;player.vy=0;player.onGround=true;}
+
+      // Anim
+      player.animTimer++;
+      if(player.animTimer>7){player.animFrame=(player.animFrame+1)%4;player.animTimer=0;}
+
+      // Obstacles
+      nextObs--;
+      if(nextObs<=0){
+        spawnObs();
+        nextObs=Math.max(38,105-Math.floor(score/300)*6);
+      }
+      obstacles.forEach(o=>o.x-=speed);
+      obstacles=obstacles.filter(o=>o.x>-80);
+
+      // Çarpışma kontrolü
+      for(let o of obstacles){
+        if(checkHit(o)){endGame();return;}
+      }
+    }
+
+    // Engelleri çiz
+    obstacles.forEach(o=>{
+      px(ctx,o.def.grid,o.x,o.y,o.sz,o.def.pal);
+    });
+
+    // Karakteri çiz
+    const sprite=!player.onGround?RITA_JUMP:(player.animFrame<2?RITA_RUN1:RITA_RUN2);
+    px(ctx,sprite,player.x,player.y,SZ,RITA_COLORS);
+
+    // İlerleme çubuğu (kupon için)
+    if(running){
+      const prog=Math.min(1,score/1500);
+      ctx.fillStyle='rgba(212,43,43,.2)';ctx.fillRect(0,0,W,4);
+      ctx.fillStyle=prog>=1?'#F9C060':'#D42B2B';ctx.fillRect(0,0,W*prog,4);
+      // Eşik işaretleri
+      ctx.fillStyle='rgba(255,255,255,.4)';
+      ctx.fillRect(W*(500/1500),0,2,4);
+      ctx.fillRect(W*(1500/1500)-2,0,2,4);
+    }
+
+    if(!over) RAF=requestAnimationFrame(loop);
+  }
+
+  RAF=requestAnimationFrame(loop);
+
+  // Expose score for game-over button
+  document.getElementById('btnGo').onclick=function(){
+    const s=score; showResult(s);
+  };
+
+  // Countdown then go
+  runCountdown(()=>{ running=true; });
+}
+
+/* ══════════════════════
+   SONUÇ
+══════════════════════ */
+function showResult(score){
+  const coupon=getCoupon(score);
+  const p=window._player;
+  addPlayer({ts:Date.now(),name:p.name,email:p.email,phone:p.phone,score,coupon});
+
+  let stars='☆☆☆',title='TEKRAR DENE!';
+  if(score>=1500){stars='★★★';title='EFSANE!';}
+  else if(score>=800){stars='★★☆';title='HARİKA!';}
+  else if(score>=400){stars='★☆☆';title='İYİ İŞ!';}
+
+  let cpHTML='';
+  if(coupon){
+    cpHTML=`<div class="coupon-box">
+      <div class="cp-badge">${coupon.tier} ÖDÜLÜ</div>
+      <div class="cp-pct">%${coupon.pct}</div>
+      <div class="cp-label">indirim kuponu kazandın!</div>
+      <div class="cp-code-row">
+        <span class="cp-code" id="cpCode">${coupon.code}</span>
+        <button class="copy-btn" onclick="copyCode()">Kopyala</button>
+      </div>
+      <div class="cp-exp">Geçerlilik: <strong>${todayEnd()}</strong> — sadece bugün</div>
+    </div>`;
+  }else{
+    cpHTML=`<div class="no-coupon">Kupon için daha yüksek skor yap!<br><small>500 puan → %5 &nbsp;|&nbsp; 1500 puan → %10</small></div>`;
+  }
+
+  document.getElementById('resContent').innerHTML=`
+    <div class="result-stars">${stars}</div>
+    <div class="result-title">${title}</div>
+    <div style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .1rem;">${p.name}</div>
+    <div class="result-score">${score}</div>
+    <div class="stat-card">
+      <div class="stat-row"><span class="lb">Skor</span><span class="vl" style="color:var(--yellow)">${score}</span></div>
+      <div class="stat-row"><span class="lb">En iyi</span><span class="vl">${getBest()}</span></div>
+      <div class="stat-row"><span class="lb">E-posta</span><span class="vl">${p.email}</span></div>
+      <div class="stat-row"><span class="lb">Tarih</span><span class="vl">${fmtDate(Date.now())}</span></div>
+    </div>
+    ${cpHTML}
+    <div class="lock-note">🔒 Oyun kaydedildi. Aynı e-posta ile tekrar oynamak mümkün değil.</div>
+  `;
+  showSc('sc-res');
+
+  if(score>=400){
+    const cols=['#D42B2B','#F9C060','#F5E6C8','#C8720A','#FFFFFF'];
+    for(let i=0;i<35;i++){
+      const c=document.createElement('div');c.className='cfp';
+      c.style.cssText=`left:${Math.random()*100}%;top:0;background:${cols[i%5]};animation-delay:${Math.random()*.9}s;animation-duration:${1.2+Math.random()}s;`;
+      document.body.appendChild(c);setTimeout(()=>c.remove(),2700);
+    }
+  }
+}
+
+function copyCode(){
+  const el=document.getElementById('cpCode');if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    const b=document.querySelector('.copy-btn');
+    if(b){b.textContent='✓ Kopyalandı';b.style.background='#4CAF50';}
+    setTimeout(()=>{if(b){b.textContent='Kopyala';b.style.background='var(--red)';}},2200);
+  }).catch(()=>{});
+}
+
+/* ══════════════════════
+   ADMİN
+══════════════════════ */
+function showAdmin(){showSc('sc-adminpass');document.getElementById('adminErr').textContent='';}
+function checkAdmin(){
+  if(document.getElementById('adminPwd').value===ADMIN_PASS){loadAdmin();showSc('sc-admin');}
+  else{document.getElementById('adminErr').textContent='Şifre yanlış!';}
+}
+function loadAdmin(){
+  const pl=getPlayers();
+  const total=pl.length;
+  const wc=pl.filter(p=>p.coupon).length;
+  const avg=total?Math.round(pl.reduce((s,p)=>s+p.score,0)/total):0;
+  document.getElementById('adminStats').innerHTML=`
+    <div class="astat"><div class="astat-val">${total}</div><div class="astat-lbl">Oyuncu</div></div>
+    <div class="astat"><div class="astat-val">${wc}</div><div class="astat-lbl">Kupon Kazanan</div></div>
+    <div class="astat"><div class="astat-val">${avg}</div><div class="astat-lbl">Ort. Puan</div></div>
+  `;
+  const tbody=document.getElementById('adminBody');tbody.innerHTML='';
+  [...pl].reverse().forEach((p,i)=>{
+    const cp=p.coupon?`<span class="badge-cp">%${p.coupon.pct} ${p.coupon.code}</span>`:`<span class="badge-none">—</span>`;
+    tbody.innerHTML+=`<tr>
+      <td>${total-i}</td><td>${p.name}</td><td>${p.email}</td>
+      <td>${p.phone||'—'}</td>
+      <td style="color:var(--yellow);font-weight:500">${p.score}</td>
+      <td>${cp}</td><td>${fmtDate(p.ts)}</td>
+    </tr>`;
+  });
+}
+function exportCSV(){
+  const pl=getPlayers();if(!pl.length)return;
+  const hdr='Ad,E-posta,Telefon,Puan,Kupon,Tarih';
+  const rows=pl.map(p=>`"${p.name}","${p.email}","${p.phone||''}",${p.score},"${p.coupon?p.coupon.code+' (%'+p.coupon.pct+')':''}","${fmtDate(p.ts)}"`);
+  const csv=[hdr,...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`rita-deli-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>
